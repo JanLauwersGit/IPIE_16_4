@@ -45,7 +45,9 @@ cost_per_year_classic = 172.17   # Fixed cost per year [€/yr]
 prosument_tarif_inv = 41.11      # Cost per kW installed invertor in case of an analog meter [€/kW]
 heffingen_start = 0.01646        # Heffingen [€/kWh]
 btw_panels = 0.21           
-installation = 0.5               # Proportion of cost that is needed to pay for the installation
+installation = 0.88               # Total investment =  cost equipment * (1+installation) 
+cable_losses = 0.02              
+dust_losses = 0.04
 
 '''How to plot'''
 #plot1 = pyplot.plot(untouched_gains.index, untouched_gains.values)
@@ -115,7 +117,7 @@ def panel_gains(n, inv, number_of_panels, year, flat=True):
     untouched_gains = actual_efficiency/100*solar_irradiance*number_of_panels*area(n)/4000
     # The gains corrigated with the maximum energy of the invertor [kWh]
     maximum_gains_inv = untouched_gains.apply(lambda x: min(x,max_energy_invertor))
-    return maximum_gains_inv*efficiency_invertor/100
+    return (1 - cable_losses)*(1-dust_losses)*maximum_gains_inv*efficiency_invertor/100
 
 '''Price functions'''
 # Adapt the price of electricity or other goods with an estimated inflation rate [€]
@@ -217,8 +219,8 @@ def profit_of_investment(n, inv, number_of_panels, year_to_be_studied, discount,
         profit += profit_panels_per_year(n, inv, number_of_panels, year + 2023, flat, digital)/((1+discount)**year)
     return profit
 
-# for n in range(25):
-#     print(profit_of_investment(10,5,10,n+2023,0.05))
+for n in range(25):
+    print(profit_of_investment(10,5,10,n+2023,0.08), n+2023)
 
 # for n in range(25):
 #     print(profit_of_investment(10,5,10,n+2023,0.05, flat=True, digital=False))
