@@ -209,7 +209,7 @@ invertor_lifetime = 12
 # Calculate profit of investment at the beginning of year_to_be_studied with a certain discount over the years
 def profit_of_investment(n, inv, number_of_panels, year_to_be_studied, discount, flat=True, digital=True):
     # Start at minus investment cost
-    profit = (-number_of_panels*price(n)-p_invertor(2023, inv))*(1+installation)
+    profit = (-number_of_panels*price(n)-p_invertor(2023, inv))*(1+installation)*(1+btw_panels)
     for year in range(year_to_be_studied-2023):
         # Replace invertor if needed
         if year == invertor_lifetime:
@@ -248,13 +248,35 @@ def payback_time(n, inv, number_of_panels, discount, flat=True, digital=True):
 
 
 #Optimal setup
+profits = []
+panels = []
+inverters = []
+amounts_of_panels = []
+tilt_angles_for = []
+orientation_angles_for = []
 
-for tilt_angle_for in {10,15,20,25,30,35,40,45}:
-    for orientation_angle_for in {0,90,180,270}: 
-        for panel in {1,3,10,21,28}:
-            for inverter in range(1,len(invertor_data_file)):
-                for amount_of_panels in {1:24}:
-                    solar_irradiance = solar_data_file[['DayNumber', 'GlobRad', 'DiffRad']].apply(sa.poa_irradiance, axis=1, args=(tilt_angle_for, orientation_angle_for, latitude, longitude, 1))
-                    invertor_data_file['DC POWER'][inverter]
-                    print('performance:', profit_of_investment(panel,inverter,amount_of_panels,2048,0.05,True,True), panel, inverter, amount_of_panels,tilt_angle_for,orientation_angle_for)
+def profit_data_gen(i):
+    for tilt_angle_for in {10,15,20,25,30,35,40}:
+        for orientation_angle_for in {0,90,180,270}:
+            solar_irradiance = solar_data_file[['DayNumber', 'GlobRad', 'DiffRad']].apply(sa.poa_irradiance, axis=1, args=(tilt_angle_for, orientation_angle_for, latitude, longitude, 1)) 
+            for panel in {1,3,10,21,28}:
+                for inverter in range(1,len(invertor_data_file)):
+                    for amount_of_panels in range(10,32,2):
+                        if invertor_data_file['DC POWER'][inverter] > 0.5*amount_of_panels*peakpower(panel) and invertor_data_file['DC POWER'][inverter] < amount_of_panels*peakpower(panel):
+                            profit = profit_of_investment(panel,inverter,amount_of_panels,2048,0.05,True,True)
+                            print('performance:', i, profit, panel, inverter, amount_of_panels,tilt_angle_for,orientation_angle_for)
+                            profits.append(profit)
+                            panels.append(panel)
+                            inverters.append(inverter)
+                            amounts_of_panels.append(amount_of_panels)
+                            tilt_angles_for.append(tilt_angle_for)
+                            orientation_angles_for.append(orientation_angle_for)
+                            i+=1
+                        if i == 50:
+                            return
 
+profit_data_gen(0)
+
+profit_data = {'Profits':profits, 'Panels':panels,'Inverters':inverters,'Amount of panels':amounts_of_panels,'Tilt angle':tilt_angles_for,'Orientation angle':orientation_angles_for}
+profit_dataframe = p.DataFrame(data = profit_data)
+profit_dataframe.to_excel("profit_data.xlsx")
