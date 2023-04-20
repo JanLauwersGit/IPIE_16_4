@@ -255,6 +255,6 @@ for tilt_angle_for in {10,15,20,25,30,35,40,45}:
             for inverter in range(1,len(invertor_data_file)):
                 for amount_of_panels in {1:24}:
                     solar_irradiance = solar_data_file[['DayNumber', 'GlobRad', 'DiffRad']].apply(sa.poa_irradiance, axis=1, args=(tilt_angle_for, orientation_angle_for, latitude, longitude, 1))
-                    invertor_data_file['EFF'][inverter]
+                    invertor_data_file['DC POWER'][inverter]
                     print('performance:', profit_of_investment(panel,inverter,amount_of_panels,2048,0.05,True,True), panel, inverter, amount_of_panels,tilt_angle_for,orientation_angle_for)
 
