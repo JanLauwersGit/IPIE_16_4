@@ -25,27 +25,27 @@ from main import df_irr
 # pyplot.plot(df_irr.index, df_irr['DeclinationAngle'])
 # pyplot.title("Declination Angle")
 # pyplot.show()
-#
+
 # pyplot.plot(df_irr.index, df_irr['SolarTimeDifference'])
 # pyplot.title("Difference between solar time and local time")
 # pyplot.show()
-#
+
 # pyplot.plot(df_irr.index, df_irr['HourAngle'])
 # pyplot.title("Hour Angle")
 # pyplot.show()
-#
+
 # pyplot.plot(df_irr.index, df_irr['ElevationAngle'])
 # pyplot.title("Elevation Angle")
 # pyplot.show()
-#
+
 # pyplot.plot(df_irr.index, df_irr['AzimuthAngle'])
 # pyplot.title("Azimuth Angle")
 # pyplot.show()
-#
+
 # pyplot.plot(df_irr.index, df_irr['IncidenceAngle'])
 # pyplot.title("Incidence Angle")
 # pyplot.show()
-#
+
 # pyplot.plot(df_irr.index, df_irr['EffComplementaryIncidenceAngle'])
 # pyplot.title("Effective Complementary Incidence Angle")
 # pyplot.show()

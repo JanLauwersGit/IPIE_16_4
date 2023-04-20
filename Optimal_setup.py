@@ -219,8 +219,8 @@ def profit_of_investment(n, inv, number_of_panels, year_to_be_studied, discount,
         profit += profit_panels_per_year(n, inv, number_of_panels, year + 2023, flat, digital)/((1+discount)**year)
     return profit
 
-for n in range(25):
-    print(profit_of_investment(10,5,10,n+2023,0.08), n+2023)
+# for n in range(25):
+#     print(profit_of_investment(10,5,10,n+2023,0.08), n+2023)
 
 # for n in range(25):
 #     print(profit_of_investment(10,5,10,n+2023,0.05, flat=True, digital=False))
@@ -247,4 +247,14 @@ def payback_time(n, inv, number_of_panels, discount, flat=True, digital=True):
 #print(payback_time(10,5,10,0.05))
 
 
+#Optimal setup
+
+for tilt_angle_for in {10,15,20,25,30,35,40,45}:
+    for orientation_angle_for in {0,90,180,270}: 
+        for panel in {1,3,10,21,28}:
+            for inverter in range(1,len(invertor_data_file)):
+                for amount_of_panels in {1:24}:
+                    solar_irradiance = solar_data_file[['DayNumber', 'GlobRad', 'DiffRad']].apply(sa.poa_irradiance, axis=1, args=(tilt_angle_for, orientation_angle_for, latitude, longitude, 1))
+                    invertor_data_file['EFF'][inverter]
+                    print('performance:', profit_of_investment(panel,inverter,amount_of_panels,2048,0.05,True,True), panel, inverter, amount_of_panels,tilt_angle_for,orientation_angle_for)
 
