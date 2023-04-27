@@ -3,12 +3,21 @@ lifetime of the panels. The variables are the angle for the panels, the number o
 of convertor. The input is the solar irradiance, the orientation of the roof, the electricity consumption. The output of the solar
 panels is limited by the maximum power flow of the convertor, as well as the available area."""
 
+print('start')
+
 '''Import'''
 # Importing some libraries and help files
+
+print('pandas')
 import pandas as p
+print('solar_angles')
 import solar_angles as sa
+print('matplotlib')
 from matplotlib import pyplot
+print('main')
 import main
+
+print('1')
 
 # Importing some excel files as data frames
 solar_data_file = main.df_irr                                       # Contains corrigated irradiance and panel temperature
@@ -18,6 +27,8 @@ invertor_data_file = p.read_excel('INV EXCEL.xlsx',sheet_name=0)    # Contains p
 invertor_data_file = invertor_data_file.set_index('REFERENCE')      # Sets index to provided reference number in excel file
 panel_file = p.read_excel('Solar_panel_data.xlsx',sheet_name=0)     # Contains all relevant solar panel parameters
 panel_file = panel_file.set_index('PANELS')                         # Sets index to provided reference number in excel file
+
+print('2')
 
 '''Irradiance parameters'''
 # All angles are given in degrees, only internally in functions, they are converted to radians for calculations
@@ -48,6 +59,8 @@ btw_panels = 0.21
 installation = 0.88               # Total investment =  cost equipment * (1+installation) 
 cable_losses = 0.02              
 dust_losses = 0.04
+
+print('3')
 
 '''How to plot'''
 #plot1 = pyplot.plot(untouched_gains.index, untouched_gains.values)
@@ -90,6 +103,8 @@ def price(n):
 def area(n):
     dims = dimensions(n)
     return int(dims[0:4])*int(dims[5:9])/10**6
+
+print('4')
 
 '''Function to calculate the panel gains in kWh every quarter. This information will later be used to calculate the profit of our investment.
 A help function to calculate the actual efficiency in every quarter is needed.'''
@@ -163,8 +178,9 @@ def capacity_gain_per_year(n, inv, number_of_panels, year, flat = True):
     sum_of_maximal_load = 0
     sum_of_maximal_difference = 0
     for m in range(len(load_list_per_month)):
-        sum_of_maximal_load += max(load_list_per_month[m])
-        sum_of_maximal_difference += max(difference_list_per_month[m])
+        sum_of_maximal_load = max(2.5, max(load_list_per_month[m]))
+        sum_of_maximal_difference = max(2.5,max(difference_list_per_month[m]))
+        
     # You pay at least for a mean of 2.5 kW
     return capacity_tarif*(max(sum_of_maximal_load/12, 2.5)-max(sum_of_maximal_difference/12, 2.5))
 
@@ -219,6 +235,8 @@ def profit_of_investment(n, inv, number_of_panels, year_to_be_studied, discount,
         profit += profit_panels_per_year(n, inv, number_of_panels, year + 2023, flat, digital)/((1+discount)**year)
     return profit
 
+print('5')
+
 # for n in range(25):
 #     print(profit_of_investment(10,5,10,n+2023,0.08), n+2023)
 
@@ -248,6 +266,7 @@ def payback_time(n, inv, number_of_panels, discount, flat=True, digital=True):
 
 
 #Optimal setup
+investments = []
 profits = []
 panels = []
 inverters = []
@@ -256,15 +275,17 @@ tilt_angles_for = []
 orientation_angles_for = []
 
 def profit_data_gen(i):
-    for tilt_angle_for in {10,15,20,25,30,35,40}:
-        for orientation_angle_for in {0,90,180,270}:
+    for tilt_angle_for in {30}:
+        for orientation_angle_for in {0}:
             solar_irradiance = solar_data_file[['DayNumber', 'GlobRad', 'DiffRad']].apply(sa.poa_irradiance, axis=1, args=(tilt_angle_for, orientation_angle_for, latitude, longitude, 1)) 
             for panel in {1,3,10,21,28}:
                 for inverter in range(1,len(invertor_data_file)):
                     for amount_of_panels in range(10,32,2):
                         if invertor_data_file['DC POWER'][inverter] > 0.5*amount_of_panels*peakpower(panel) and invertor_data_file['DC POWER'][inverter] < amount_of_panels*peakpower(panel):
-                            profit = profit_of_investment(panel,inverter,amount_of_panels,2048,0.05,True,True)
-                            print('performance:', i, profit, panel, inverter, amount_of_panels,tilt_angle_for,orientation_angle_for)
+                            investment = (amount_of_panels*price(panel)+p_invertor(2023, inverter))*(1+installation)*(1+btw_panels)
+                            profit = profit_of_investment(panel,inverter,amount_of_panels,2048,0.05,False,True)
+                            print(i,investment, 'performance:', profit, panel, inverter, amount_of_panels,tilt_angle_for,orientation_angle_for)
+                            investments.append(investment)
                             profits.append(profit)
                             panels.append(panel)
                             inverters.append(inverter)
@@ -272,11 +293,16 @@ def profit_data_gen(i):
                             tilt_angles_for.append(tilt_angle_for)
                             orientation_angles_for.append(orientation_angle_for)
                             i+=1
-                        if i == 50:
-                            return
+                        # if i == 50:
+                        #     return
+
+
+print('6')
 
 profit_data_gen(0)
 
-profit_data = {'Profits':profits, 'Panels':panels,'Inverters':inverters,'Amount of panels':amounts_of_panels,'Tilt angle':tilt_angles_for,'Orientation angle':orientation_angles_for}
+print('7')
+
+profit_data = {'Investment':investments, 'Profits':profits, 'Panels':panels,'Inverters':inverters,'Amount of panels':amounts_of_panels,'Tilt angle':tilt_angles_for,'Orientation angle':orientation_angles_for}
 profit_dataframe = p.DataFrame(data = profit_data)
 profit_dataframe.to_excel("profit_data.xlsx")
